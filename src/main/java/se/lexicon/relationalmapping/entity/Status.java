@@ -1,6 +1,7 @@
 package se.lexicon.relationalmapping.entity;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -16,12 +17,26 @@ public class Status {
 //    @JoinTable(name = "cars_status", joinColumns = @JoinColumn(name = "cars_id"),
 //            inverseJoinColumns = @JoinColumn(name = "status_id"))
     private Collection<Car> cars;
-
     protected Status() {
     }
-
     public Status(String statusCode) {
         this.statusCode = statusCode;
+    }
+    public void addCar(Car car){
+        if(car== null) throw new IllegalArgumentException("car is null");
+        if(cars==null) cars= new ArrayList<>();
+        if(car.getStatusCodes()==null) car.setStatusCodes(new ArrayList<>());
+        cars.add(car);
+        car.getStatusCodes().add(this);
+    }
+    public void removeCarFromCollection(Car car){
+        if(car==null) throw new IllegalArgumentException("Car is null, invalid value");
+        if(cars!=null){
+            if(cars.contains(car)){
+                cars.remove(car);
+                car.getStatusCodes().remove(this);
+            }
+        }
     }
 
     public int getStatusId() {

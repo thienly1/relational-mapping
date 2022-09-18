@@ -1,7 +1,9 @@
 package se.lexicon.relationalmapping.entity;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -16,11 +18,11 @@ public class AppUser {
     private String name;
     @Column(length = 100,nullable = false)
     private String password;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
 //    @JoinColumn(name = "address_id", referencedColumnName = "addressId")
     private Address address;
 
-    @OneToMany(mappedBy = "owner")
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
     private Collection<Car> ownedCars;
 
     protected AppUser() {
@@ -31,6 +33,24 @@ public class AppUser {
         this.name = name;
         this.password = password;
     }
+    public void addNewCar(Car car){
+        if(car==null) throw new IllegalArgumentException("car is null, invalid value");
+        if(ownedCars==null) ownedCars= new ArrayList<>();
+        ownedCars.add(car);
+        car.setOwner(this);
+    }
+    public void removeCar(Car car){
+        if(car==null) throw new IllegalArgumentException("car is null, invalid value");
+        if(ownedCars!=null){
+            if(ownedCars.contains(car)){
+                car.setOwner(null);
+                ownedCars.remove(car);
+            }
+
+        }
+
+    }
+
 
     public int getUseId() {
         return useId;
@@ -70,6 +90,14 @@ public class AppUser {
 
     public void setAddress(Address address) {
         this.address = address;
+    }
+
+    public Collection<Car> getOwnedCars() {
+        return ownedCars;
+    }
+
+    public void setOwnedCars(Collection<Car> ownedCars) {
+        this.ownedCars = ownedCars;
     }
 
     @Override

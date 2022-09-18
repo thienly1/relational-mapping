@@ -4,7 +4,9 @@ import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 @Entity
@@ -19,24 +21,47 @@ public class Car {
     private String brand;
     @Column(length = 100)
     private String model;
-    @CreatedDate
+    @Column
     private LocalDate regDate;
 
     @ManyToOne
     @JoinColumn(name = "use_id", referencedColumnName = "useId")
     private AppUser owner;
 
-    @ManyToMany(mappedBy = "cars")
+    @ManyToMany(mappedBy = "cars", fetch = FetchType.LAZY)
     private Collection<Status> statusCodes;
 
     protected Car() {
     }
 
-    public Car(String regNumber, String brand, String model, AppUser owner) {
+    public Car(String regNumber, String brand, String model) {
         this.regNumber = regNumber;
         this.brand = brand;
         this.model = model;
-        this.owner = owner;
+    }
+
+    public Car(String regNumber, String brand, String model, LocalDate regDate) {
+        this.regNumber = regNumber;
+        this.brand = brand;
+        this.model = model;
+        this.regDate = regDate;
+    }
+
+    public void addStatusToCollection(Status status){
+        if(status==null) throw new IllegalArgumentException("status is null, invalid value");
+        if(statusCodes==null) statusCodes = new ArrayList<>();
+        if(status.getCars()==null) status.setCars(new HashSet<>());
+        statusCodes.add(status);
+        status.getCars().add(this);
+    }
+    public void removeStatusFromCollection(Status status){
+        if(status==null) throw new IllegalArgumentException("status is null, invalid value");
+        if(statusCodes!=null){
+            if(statusCodes.contains(status)){
+                statusCodes.remove(status);
+                status.getCars().remove(this);
+            }
+        }
     }
 
     public int getCarId() {
@@ -117,7 +142,7 @@ public class Car {
                 ", model='" + model + '\'' +
                 ", regDate=" + regDate +
                 ", owner=" + owner +
-                ", statusCodes=" + statusCodes +
+//                ", statusCodes=" + statusCodes +
                 '}';
     }
 }
